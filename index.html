@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>💰 Finance Match Challenge</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #27ae60 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 30px;
+            padding: 20px 15px;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 2.2em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 15px;
+            font-style: italic;
+            font-size: 1.1em;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .score-board {
+            font-size: 1.6em;
+            font-weight: bold;
+            color: #27ae60;
+        }
+
+        .timer {
+            font-size: 1.6em;
+            font-weight: bold;
+            color: #e67e22;
+        }
+
+        .pairs-matched {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            font-size: 1.1em;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .btn-primary {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-primary:active {
+            background: #2ecc71;
+            transform: scale(0.97);
+        }
+
+        .btn-secondary {
+            background: #e67e22;
+            color: white;
+        }
+
+        .btn-secondary:active {
+            background: #d35400;
+            transform: scale(0.97);
+        }
+
+        .btn-info {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-info:active {
+            background: #2980b9;
+            transform: scale(0.97);
+        }
+
+        .timer-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #ecf0f1;
+            padding: 8px 15px;
+            border-radius: 40px;
+        }
+
+        .timer-toggle label {
+            font-weight: bold;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .timer-toggle input {
+            width: 50px;
+            height: 25px;
+            cursor: pointer;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px 12px;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 1.1em;
+            line-height: 1.4;
+            position: relative;
+            user-select: none;
+        }
+
+        .card.selected {
+            border-color: #f39c12;
+            transform: scale(1.02);
+            box-shadow: 0 12px 20px rgba(243, 156, 18, 0.3);
+        }
+
+        .card.matched {
+            background: #d4edda;
+            border-color: #27ae60;
+            opacity: 0.8;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .card.matched::after {
+            content: "✓";
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 2em;
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .card.wrong {
+            border-color: #e74c3c;
+            animation: shake 0.3s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .card-concept {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 1.2em;
+            margin-bottom: 5px;
+        }
+
+        .card-example {
+            color: #7f8c8d;
+            font-style: italic;
+        }
+
+        .card.matched .card-concept,
+        .card.matched .card-example {
+            color: #155724;
+        }
+
+        .feedback {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 20px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+            font-size: 1.3em;
+        }
+
+        .feedback.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .feedback.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        .feedback.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            display: block;
+        }
+
+        .celebration-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .celebration-overlay.active {
+            display: flex;
+        }
+
+        .celebration-message {
+            background: linear-gradient(135deg, #2c3e50, #27ae60);
+            color: white;
+            padding: 30px 40px;
+            border-radius: 60px;
+            font-size: 2.2em;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            animation: popIn 0.5s ease-out;
+            border: 4px solid gold;
+            max-width: 90%;
+        }
+
+        .celebration-message span {
+            display: block;
+            font-size: 0.5em;
+            margin-top: 10px;
+            color: #ffd700;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+        }
+
+        #confetti-canvas.active {
+            display: block;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px 25px;
+            border-radius: 40px;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-content h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 2.2em;
+        }
+
+        .modal-content p {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+            font-size: 1.2em;
+        }
+
+        .modal-content ul {
+            text-align: left;
+            margin-bottom: 25px;
+            padding-left: 25px;
+        }
+
+        .modal-content li {
+            margin-bottom: 12px;
+            color: #555;
+            font-size: 1.2em;
+        }
+
+        .modal-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 60px;
+            font-size: 1.4em;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            font-weight: bold;
+        }
+
+        .modal-btn:active {
+            background: #2ecc71;
+            transform: scale(0.97);
+        }
+
+        .final-score-popup {
+            background: white;
+            padding: 25px;
+            border-radius: 30px;
+            margin-top: 15px;
+            text-align: center;
+            border: 4px solid gold;
+        }
+
+        .final-score-popup h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.6em;
+        }
+
+        .final-score-popup .score {
+            font-size: 3em;
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        @media (min-width: 600px) {
+            .cards-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (min-width: 800px) {
+            .cards-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (max-width: 500px) {
+            .card {
+                font-size: 1em;
+                padding: 15px 8px;
+                min-height: 100px;
+            }
+            
+            .card-concept {
+                font-size: 1.1em;
+            }
+            
+            .game-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .btn {
+                padding: 10px 16px;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <audio id="winSound" preload="auto">
+        <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="introModal" class="modal" style="display: flex;">
+        <div class="modal-content">
+            <h2>💰 Finance Match Challenge</h2>
+            <p><strong>Match each financial concept with its real-life example</strong></p>
+            <ul>
+                <li>🎯 5 pairs to match — 10 cards total</li>
+                <li>👆 Tap a card to select it</li>
+                <li>✨ Tap another card to try a match</li>
+                <li>✅ Green = correct pair</li>
+                <li>❌ Red flash = wrong pair (try again!)</li>
+                <li>⏱️ Timer optional — toggle on/off</li>
+                <li>🎉 Match all 5 pairs for confetti + sound!</li>
+            </ul>
+            <p><strong>Ready to test your finance knowledge?</strong></p>
+            <button class="modal-btn" onclick="startGame()">Let's Go!</button>
+        </div>
+    </div>
+
+    <div id="celebrationOverlay" class="celebration-overlay">
+        <div class="celebration-message">
+            💰 ALL PAIRS MATCHED! 💰
+            <span>✨ FINANCE MASTER ✨</span>
+        </div>
+    </div>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <div class="game-container">
+        <h1>💰 Finance Match</h1>
+        <div class="subtitle">Match concepts to real-life examples</div>
+
+        <div class="game-header">
+            <div class="score-board">Score: <span id="score">0</span></div>
+            <div class="timer">⏱️ <span id="timer">02:00</span></div>
+            <div class="pairs-matched">Pairs: <span id="pairsMatched">0</span>/5</div>
+            <div class="button-group">
+                <div class="timer-toggle">
+                    <label for="timerToggle">Timer:</label>
+                    <input type="checkbox" id="timerToggle" checked onchange="toggleTimer()">
+                </div>
+                <button class="btn btn-info" onclick="showInstructions()">📋 Help</button>
+                <button class="btn btn-secondary" onclick="resetGame()">🔄 Reset</button>
+            </div>
+        </div>
+
+        <div id="cardsGrid" class="cards-grid">
+            <!-- Cards will be dynamically added here -->
+        </div>
+
+        <div id="feedback-message" class="feedback"></div>
+        <div id="finalScorePopup" class="final-score-popup" style="display: none;">
+            <h3>🎯 Final Score</h3>
+            <div class="score" id="finalScore">0</div>
+            <p style="margin-top: 10px;">You matched all pairs! 🌟</p>
+        </div>
+    </div>
+
+    <script>
+        const winSound = document.getElementById('winSound');
+        
+        // Card pairs — exactly as in your physical set
+        const cardPairs = [
+            {
+                concept: "Expected Cost",
+                example: "Monthly app‑hosting fees for Netflix"
+            },
+            {
+                concept: "Unexpected Cost",
+                example: "Emergency server‑recovery costs after a system crash"
+            },
+            {
+                concept: "Add‑On Revenue",
+                example: "Ryanair baggage & seat‑selection fees"
+            },
+            {
+                concept: "Recurring Revenue",
+                example: "Spotify Premium monthly subscription"
+            },
+            {
+                concept: "Licensing (Intellectual Property)",
+                example: "Disney licensing Marvel characters to toy manufacturers"
+            }
+        ];
+
+        // Build all cards
+        let allCards = [];
+        cardPairs.forEach((pair, pairIndex) => {
+            // Add concept card
+            allCards.push({
+                id: `concept-${pairIndex}`,
+                pairIndex: pairIndex,
+                type: 'concept',
+                text: pair.concept,
+                matched: false
+            });
+            // Add example card
+            allCards.push({
+                id: `example-${pairIndex}`,
+                pairIndex: pairIndex,
+                type: 'example',
+                text: pair.example,
+                matched: false
+            });
+        });
+
+        // Game state
+        let cards = [];
+        let score = 0;
+        let timeLeft = 120; // 2 minutes
+        let timerInterval;
+        let gameActive = false;
+        let gameCompleted = false;
+        let selectedCardId = null;
+        let pairsMatched = 0;
+        let timerEnabled = true;
+
+        let confettiCanvas = document.getElementById('confetti-canvas');
+        let confettiCtx = confettiCanvas.getContext('2d');
+        let confettiParticles = [];
+        let animationFrame = null;
+
+        function initGame() {
+            // Shuffle cards
+            cards = shuffleArray([...allCards]);
+            selectedCardId = null;
+            pairsMatched = 0;
+            score = 0;
+            timeLeft = 120;
+            gameCompleted = false;
+            
+            // Reset matched status
+            cards.forEach(card => card.matched = false);
+            
+            updateScore();
+            updateTimer();
+            updatePairsMatched();
+            document.getElementById('finalScorePopup').style.display = 'none';
+            document.getElementById('celebrationOverlay').classList.remove('active');
+            stopConfetti();
+            renderCards();
+        }
+
+        function startGame() {
+            document.getElementById('introModal').style.display = 'none';
+            gameActive = true;
+            if (timerEnabled) {
+                if (timerInterval) clearInterval(timerInterval);
+                timerInterval = setInterval(updateTimerTick, 1000);
+            }
+            showFeedback('Game started! Tap a card to begin.', 'info');
+        }
+
+        function showInstructions() {
+            document.getElementById('introModal').style.display = 'flex';
+        }
+
+        function toggleTimer() {
+            timerEnabled = document.getElementById('timerToggle').checked;
+            if (gameActive) {
+                if (timerEnabled) {
+                    if (timerInterval) clearInterval(timerInterval);
+                    timerInterval = setInterval(updateTimerTick, 1000);
+                } else {
+                    if (timerInterval) clearInterval(timerInterval);
+                }
+            }
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function renderCards() {
+            const grid = document.getElementById('cardsGrid');
+            grid.innerHTML = '';
+            
+            cards.forEach((card, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'card';
+                if (card.matched) {
+                    cardElement.classList.add('matched');
+                }
+                if (selectedCardId === card.id) {
+                    cardElement.classList.add('selected');
+                }
+                
+                cardElement.setAttribute('data-id', card.id);
+                cardElement.setAttribute('data-pair', card.pairIndex);
+                cardElement.setAttribute('data-type', card.type);
+                cardElement.setAttribute('data-index', index);
+                
+                cardElement.innerHTML = `
+                    <div class="card-concept">${card.type === 'concept' ? card.text : ''}</div>
+                    <div class="card-example">${card.type === 'example' ? card.text : ''}</div>
+                `;
+                
+                cardElement.addEventListener('click', () => handleCardClick(card.id));
+                
+                grid.appendChild(cardElement);
+            });
+        }
+
+        function handleCardClick(cardId) {
+            if (!gameActive || gameCompleted) {
+                showFeedback('Game not active. Reset to play.', 'error');
+                return;
+            }
+            
+            const card = cards.find(c => c.id === cardId);
+            if (!card || card.matched) return;
+            
+            // First card selected
+            if (selectedCardId === null) {
+                selectedCardId = cardId;
+                renderCards();
+                return;
+            }
+            
+            // Second card selected
+            const firstCard = cards.find(c => c.id === selectedCardId);
+            
+            // Check if same card
+            if (firstCard.id === card.id) {
+                selectedCardId = null;
+                renderCards();
+                return;
+            }
+            
+            // Check if match
+            if (firstCard.pairIndex === card.pairIndex && firstCard.type !== card.type) {
+                // Correct match!
+                firstCard.matched = true;
+                card.matched = true;
+                pairsMatched++;
+                score += 20;
+                updateScore();
+                updatePairsMatched();
+                
+                // Remove selection
+                selectedCardId = null;
+                
+                showFeedback('✅ Correct match! +20 points', 'success');
+                
+                // Check if game complete
+                if (pairsMatched === cardPairs.length) {
+                    gameActive = false;
+                    gameCompleted = true;
+                    if (timerInterval) clearInterval(timerInterval);
+                    
+                    const timeBonus = timeLeft > 0 ? Math.floor(timeLeft / 2) : 0;
+                    score += 50 + timeBonus;
+                    updateScore();
+                    
+                    celebrateWin();
+                    
+                    document.getElementById('finalScore').textContent = score;
+                    document.getElementById('finalScorePopup').style.display = 'block';
+                    
+                    showFeedback(`🎉 ALL PAIRS MATCHED! +50 bonus +${timeBonus} speed bonus!`, 'success');
+                }
+            } else {
+                // Wrong match
+                const firstElement = document.querySelector(`[data-id="${firstCard.id}"]`);
+                const secondElement = document.querySelector(`[data-id="${card.id}"]`);
+                
+                if (firstElement) firstElement.classList.add('wrong');
+                if (secondElement) secondElement.classList.add('wrong');
+                
+                setTimeout(() => {
+                    if (firstElement) firstElement.classList.remove('wrong');
+                    if (secondElement) secondElement.classList.remove('wrong');
+                }, 500);
+                
+                showFeedback('❌ Not a match. Try again!', 'error');
+            }
+            
+            // Clear selection
+            selectedCardId = null;
+            renderCards();
+        }
+
+        function celebrateWin() {
+            document.getElementById('celebrationOverlay').classList.add('active');
+            winSound.play().catch(e => console.log('Sound play failed:', e));
+            startConfetti();
+            
+            setTimeout(() => {
+                document.getElementById('celebrationOverlay').classList.remove('active');
+            }, 5000);
+            
+            setTimeout(() => {
+                stopConfetti();
+            }, 7000);
+        }
+
+        function startConfetti() {
+            confettiCanvas.width = window.innerWidth;
+            confettiCanvas.height = window.innerHeight;
+            confettiCanvas.classList.add('active');
+            
+            for (let i = 0; i < 200; i++) {
+                confettiParticles.push({
+                    x: Math.random() * confettiCanvas.width,
+                    y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+                    size: Math.random() * 10 + 3,
+                    speed: Math.random() * 6 + 3,
+                    color: `hsl(${Math.random() * 360}, 80%, 60%)`,
+                    rotation: Math.random() * 360
+                });
+            }
+            
+            function animateConfetti() {
+                if (!confettiCanvas.classList.contains('active')) return;
+                
+                confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+                
+                for (let i = 0; i < confettiParticles.length; i++) {
+                    const p = confettiParticles[i];
+                    p.y += p.speed;
+                    p.rotation += 2;
+                    
+                    if (p.y > confettiCanvas.height) {
+                        p.y = -10;
+                        p.x = Math.random() * confettiCanvas.width;
+                    }
+                    
+                    confettiCtx.save();
+                    confettiCtx.translate(p.x, p.y);
+                    confettiCtx.rotate(p.rotation * Math.PI / 180);
+                    confettiCtx.fillStyle = p.color;
+                    confettiCtx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+                    confettiCtx.restore();
+                }
+                
+                animationFrame = requestAnimationFrame(animateConfetti);
+            }
+            
+            animateConfetti();
+        }
+
+        function stopConfetti() {
+            confettiCanvas.classList.remove('active');
+            if (animationFrame) {
+                cancelAnimationFrame(animationFrame);
+                animationFrame = null;
+            }
+            confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+            confettiParticles = [];
+        }
+
+        function updateTimerTick() {
+            if (!gameActive) return;
+            
+            timeLeft--;
+            updateTimer();
+            
+            if (timeLeft <= 0) {
+                gameActive = false;
+                clearInterval(timerInterval);
+                showFeedback('⏰ Time\'s up! Reset to try again.', 'error');
+            }
+        }
+
+        function updateTimer() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('timer').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function updateScore() {
+            document.getElementById('score').textContent = score;
+        }
+
+        function updatePairsMatched() {
+            document.getElementById('pairsMatched').textContent = pairsMatched;
+        }
+
+        function showFeedback(message, type) {
+            const feedbackEl = document.getElementById('feedback-message');
+            feedbackEl.textContent = message;
+            feedbackEl.className = `feedback ${type}`;
+            
+            setTimeout(() => { 
+                feedbackEl.style.display = 'none'; 
+            }, 3000);
+        }
+
+        function resetGame() {
+            if (timerInterval) clearInterval(timerInterval);
+            gameActive = false;
+            gameCompleted = false;
+            selectedCardId = null;
+            stopConfetti();
+            initGame();
+            document.getElementById('introModal').style.display = 'flex';
+            showFeedback('New game ready!', 'info');
+        }
+
+        window.addEventListener('resize', () => {
+            if (confettiCanvas.classList.contains('active')) {
+                confettiCanvas.width = window.innerWidth;
+                confettiCanvas.height = window.innerHeight;
+            }
+        });
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
